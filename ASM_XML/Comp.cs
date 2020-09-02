@@ -68,7 +68,7 @@ namespace ASM_XML
 
             swAssy.ResolveAllLightWeightComponents(false);
 
-            comps = swAssy.GetComponents(true);
+            comps = (object[])swAssy.GetComponents(true);
 
             for (int i = 0; i < comps.Length; i++)
             {
@@ -89,12 +89,12 @@ namespace ASM_XML
                 if ((comp.GetSuppression() != (int)swComponentSuppressionState_e.swComponentSuppressed) & (comps[i] != null))
                 {
 
-                    aTrans = comp.Transform2.ArrayData;
+                    aTrans = (double[])comp.Transform2.ArrayData;
                     if (path.ToUpper().EndsWith(".SLDASM")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocASSEMBLY; }
                     if (path.ToUpper().EndsWith(".SLDPRT")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocPART; }
                     int errs = 0, wrns = 0;
                     compDoc = swApp.OpenDoc6(path, (int)docType, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, "", ref errs, ref wrns);
-                    if (compDoc == null) { compDoc = comp.GetModelDoc2(); }
+                    if (compDoc == null) { compDoc = (ModelDoc2)comp.GetModelDoc2(); }
                     if (compDoc == null)
                     {
                         swApp.SendMsgToUser2("Не могу загрузить "+path, 4, 2);

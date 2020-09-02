@@ -61,7 +61,7 @@ namespace ASM_XML
             project = new XElement("project", new XAttribute("Project_Path", fileName), new XAttribute("Project_Name", swModel.GetTitle() + ".SldAsm"));
             configurations = new XElement("configurations");
             components = new XElement("components");
-            сonfNames = swModel.GetConfigurationNames();
+            сonfNames = (string[])swModel.GetConfigurationNames();
             conf = new List<string>(сonfNames);
 
             Console.WriteLine("Обнаружено "+conf.Count+" конфигураци(и, я, й)");
