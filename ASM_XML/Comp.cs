@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using SolidWorks.Interop.sldworks;
+﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace ASM_XML
@@ -23,10 +23,12 @@ namespace ASM_XML
             {
                 beta = -Math.Asin(R[6]);
                 beta2 = Math.PI - beta;
+#pragma warning disable IDE0059 // Ненужное присваивание значения
                 alpha = Math.Atan2(R[7] / Math.Cos(beta), R[8] / Math.Cos(beta));
                 alpha2 = Math.Atan2(R[7] / Math.Cos(beta2), R[8] / Math.Cos(beta2));
                 gamma = Math.Atan2(R[3] / Math.Cos(beta), R[0] / Math.Cos(beta));
                 gamma2 = Math.Atan2(R[3] / Math.Cos(beta2), R[0] / Math.Cos(beta2));
+#pragma warning restore IDE0059 // Ненужное присваивание значения
             }
             else
             {
@@ -56,11 +58,10 @@ namespace ASM_XML
             ModelDoc2 compDoc, swModel;
             CustomPropertyManager prpMgr;
             ModelDocExtension swModelDocExt;
-            swDocumentTypes_e docType= swDocumentTypes_e.swDocPART;
+            swDocumentTypes_e docType = swDocumentTypes_e.swDocPART;
             ConfigurationManager confManager;
             string configuration;
             double[] aTrans;
-            string valOut;
             string path;
 
             coll = new List<Comp>();
@@ -68,7 +69,7 @@ namespace ASM_XML
             swAssy.ResolveAllLightWeightComponents(false);
 
             comps = swAssy.GetComponents(true);
-           
+
             for (int i = 0; i < comps.Length; i++)
             {
 
@@ -80,7 +81,7 @@ namespace ASM_XML
                 confManager = (ConfigurationManager)swModel.ConfigurationManager;
                 configuration = confManager.ActiveConfiguration.Name;
                 prpMgr = swModelDocExt.get_CustomPropertyManager(configuration);
-                prpMgr.Get4("Обозначение", true, out valOut, out _);
+                prpMgr.Get4("Обозначение", true, out string valOut, out _);
                 component.used = valOut;
 
                 comp = (Component2)comps[i];
@@ -88,41 +89,43 @@ namespace ASM_XML
                 if ((comp.GetSuppression() != (int)swComponentSuppressionState_e.swComponentSuppressed) & (comps[i] != null))
                 {
 
-                        aTrans = comp.Transform2.ArrayData;
-                        if (path.EndsWith("SLDASM")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocASSEMBLY; }
-                        if (path.EndsWith("SLDPRT")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocPART; }
-                        int errs = 0, wrns = 0;
-                        compDoc = swApp.OpenDoc6(path, (int)docType, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, "", ref errs, ref wrns);
-                        if (compDoc == null) { compDoc = comp.GetModelDoc2(); }
-                        configuration = (string)comp.ReferencedConfiguration;
-                        swModelDocExt = (ModelDocExtension)compDoc.Extension;
-                        prpMgr = (CustomPropertyManager)swModelDocExt.get_CustomPropertyManager(configuration);
+                    aTrans = comp.Transform2.ArrayData;
+                    if (path.ToUpper().EndsWith(".SLDASM")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocASSEMBLY; }
+                    if (path.ToUpper().EndsWith(".SLDPRT")) { docType = (swDocumentTypes_e)swDocumentTypes_e.swDocPART; }
+                    int errs = 0, wrns = 0;
+                    compDoc = swApp.OpenDoc6(path, (int)docType, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, "", ref errs, ref wrns);
+                    if (compDoc == null) { compDoc = comp.GetModelDoc2(); }
 
-                        prpMgr.Get4("Формат", true, out valOut, out _);
-                        component.format = valOut;
-                        prpMgr.Get4("Обозначение", true, out valOut, out _);
-                        component.designation = valOut;
-                        prpMgr.Get4("Наименование", true, out valOut, out _);
-                        component.name = valOut;
-                        prpMgr.Get4("Примечание", true, out valOut, out _);
-                        component.note = valOut;
-                        prpMgr.Get4("Раздел", true, out valOut, out _);
-                        component.chapter = valOut;
-                        prpMgr.Get4("Перв.Примен.", true, out valOut, out _);
-                        component.included = valOut;
+                    configuration = (string)comp.ReferencedConfiguration;
+                    swModelDocExt = (ModelDocExtension)compDoc.Extension;
+                    prpMgr = (CustomPropertyManager)swModelDocExt.get_CustomPropertyManager(configuration);
 
-                        if ((component.chapter == "Стандартные изделия") | (component.chapter == "Прочие изделия"))
-                        {
-                            prpMgr.Get4("Документ на поставку", true, out valOut, out _);
-                            component.doc = valOut;
-                            component.type = component.name.Substring(0, component.name.IndexOf((char)32));
-                        }
+                    prpMgr.Get4("Формат", true, out valOut, out _);
+                    component.format = valOut;
+                    prpMgr.Get4("Обозначение", true, out valOut, out _);
+                    component.designation = valOut;
+                    prpMgr.Get4("Наименование", true, out valOut, out _);
+                    component.name = valOut;
+                    prpMgr.Get4("Примечание", true, out valOut, out _);
+                    component.note = valOut;
+                    prpMgr.Get4("Раздел", true, out valOut, out _);
+                    component.chapter = valOut;
+                    prpMgr.Get4("Перв.Примен.", true, out valOut, out _);
+                    component.included = valOut;
 
-                        component.x = Math.Round((aTrans[9] * 1000), 2);
-                        component.y = Math.Round((aTrans[10] * 1000), 2);
-                        component.z = Math.Round((aTrans[11] * 1000), 2);
-                        component.rotation = Euler(aTrans);
-                    
+                    if ((component.chapter == "Стандартные изделия") | (component.chapter == "Прочие изделия"))
+                    {
+                        prpMgr.Get4("Документ на поставку", true, out valOut, out _);
+                        component.doc = valOut;
+                        component.type = component.name.Substring(0, component.name.IndexOf((char)32));
+                    }
+
+                    component.x = Math.Round((aTrans[9] * 1000), 2);
+                    component.y = Math.Round((aTrans[10] * 1000), 2);
+                    component.z = Math.Round((aTrans[11] * 1000), 2);
+                    component.rotation = Euler(aTrans);
+                    component.quantity = 1;
+
                     coll.Add(component);
                 }
             }
@@ -141,16 +144,16 @@ namespace ASM_XML
                 }
             }
 
-         return coll;
+            return coll;
         }
         public static XElement GetComponent(Comp comp)
         {
-            
+
             XAttribute[] name, value;
             name = new XAttribute[25];
             value = new XAttribute[25];
             XElement property, properties, component;
-            properties =new XElement("properties");
+            properties = new XElement("properties");
             component = new XElement("component");
 
             name[0] = new XAttribute("name", "Раздел СП");
@@ -227,7 +230,7 @@ namespace ASM_XML
             CustomPropertyManager prpMgr;
             ModelDocExtension swModelDocExt;
             ConfigurationManager confManager;
-            string configuration, valOut;
+            string configuration;
 
             swModel = (ModelDoc2)swAssy;
 
@@ -235,7 +238,7 @@ namespace ASM_XML
             configuration = confManager.ActiveConfiguration.Name;
             swModelDocExt = swModel.Extension;
             prpMgr = swModelDocExt.get_CustomPropertyManager(configuration);
-            prpMgr.Get4("п_Утв", true, out valOut, out _);
+            prpMgr.Get4("п_Утв", true, out string valOut, out _);
             approved = valOut;
             prpMgr.Get4("п_Разраб", true, out valOut, out _);
             developed = valOut;

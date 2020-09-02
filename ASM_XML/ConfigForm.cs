@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ASM_XML
@@ -21,7 +16,7 @@ namespace ASM_XML
 
 
             CheckBox button;
-            for (int i = 1; i < conf_in.Count+1; i++)
+            for (int i = 1; i < conf_in.Count + 1; i++)
             {
                 button = new CheckBox();
                 Controls.Add(button);
@@ -41,10 +36,10 @@ namespace ASM_XML
 
         private void Ok_Click(object sender, EventArgs e)
         {
-            conf=new List<string>();
+            conf = new List<string>();
             foreach (CheckBox but in Controls.OfType<CheckBox>())
-            {             
-              if (but.Checked) { conf.Add(but.Text); }
+            {
+                if (but.Checked) { conf.Add(but.Text); }
             }
             this.Close();
 
