@@ -95,7 +95,12 @@ namespace ASM_XML
                     int errs = 0, wrns = 0;
                     compDoc = swApp.OpenDoc6(path, (int)docType, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, "", ref errs, ref wrns);
                     if (compDoc == null) { compDoc = comp.GetModelDoc2(); }
-
+                    if (compDoc == null)
+                    {
+                        swApp.SendMsgToUser2("Не могу загрузить "+path, 4, 2);
+                        swApp.ExitApp();
+                        System.Environment.Exit(0);
+                    }    
                     configuration = (string)comp.ReferencedConfiguration;
                     swModelDocExt = (ModelDocExtension)compDoc.Extension;
                     prpMgr = (CustomPropertyManager)swModelDocExt.get_CustomPropertyManager(configuration);
@@ -135,8 +140,13 @@ namespace ASM_XML
                 if (k.chapter != "Сборочные единицы" & k.chapter != "Детали" & k.chapter != "Документация" & k.chapter != "Комплекты")
                 {
                     k.format = "";
-                    k.designation = "";
                 }
+
+                if (k.chapter != "Сборочные единицы" & k.chapter != "Детали" & k.chapter != "Документация" & k.chapter != "Комплекты" & k.chapter != "Стандартные изделия")
+                {
+                   k.designation = "";
+                }
+
                 if (k.format.Contains("*)"))
                 {
                     k.note = k.format.Substring(2);

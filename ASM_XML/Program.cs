@@ -3,6 +3,7 @@ using SolidWorks.Interop.swconst;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using System.Threading;
 
 namespace ASM_XML
 {
@@ -11,13 +12,14 @@ namespace ASM_XML
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Подключение к SldWorks.Application");
             var progId = "SldWorks.Application.27";
 
             var progType = System.Type.GetTypeFromProgID(progId);
 
             var swApp = System.Activator.CreateInstance(progType) as ISldWorks;
             swApp.Visible = false;
-            Console.WriteLine(swApp.RevisionNumber());
+            Console.WriteLine("Успешное подключение к версии SldWorks.Application "+swApp.RevisionNumber());
             Console.WriteLine(DateTime.Now.ToString());
             Console.CursorSize = 100;
             ModelDoc2 swModel;
@@ -29,6 +31,7 @@ namespace ASM_XML
             int errors = 0;
             int warnings = 0;
             string fileName;   // GetOpenFileName
+            string path;
             List<string> conf;
             string[] сonfNames;
             
@@ -39,6 +42,8 @@ namespace ASM_XML
                 swApp.ExitApp();
                 return;
             }
+            Console.WriteLine("Загружается сборка "+fileName);
+
             swModel = (ModelDoc2)swApp.OpenDoc6(fileName, (int)swDocumentTypes_e.swDocASSEMBLY, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, "", ref errors, ref warnings);
 
             //Проверяем открыта сборка или нет
@@ -56,13 +61,13 @@ namespace ASM_XML
             project = new XElement("project", new XAttribute("Project_Path", fileName), new XAttribute("Project_Name", swModel.GetTitle() + ".SldAsm"));
             configurations = new XElement("configurations");
             components = new XElement("components");
-
             сonfNames = swModel.GetConfigurationNames();
             conf = new List<string>(сonfNames);
 
+            Console.WriteLine("Обнаружено "+conf.Count+" конфигураци(и, я, й)");
             ConfigForm f = new ConfigForm(conf);
             f.ShowDialog();
-
+            Console.WriteLine("Надо подождать");
             if (f.conf == null)
             {
                 swApp.ExitApp();
@@ -94,7 +99,11 @@ namespace ASM_XML
             xml.Add(transaction);
             doc.Add(xml);
             Console.WriteLine(doc);
-            doc.Save("d:\\macro\\test.xml");
+            //path = "d:\\macro\\test.xml";
+            path = fileName.Substring(0, fileName.Length-7)+".xml";
+            Console.WriteLine("Файл сохранен в "+path);
+            doc.Save(path);
+            Thread.Sleep(2000);
             //Console.ReadKey();
             swApp.ExitApp();
         }
